@@ -18,35 +18,32 @@ pragma solidity ^0.8.25;
 
  */
 
-
-
-
-import {Test,console} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {TimeLockVault} from "../src/TimeLockVault.sol";
 import {VaultNFT} from "../src/VaultNft.sol";
 import {DeployTimeLockVault} from "../script/DeployTimeLockVault.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
-import{HelperConfig} from "script/HelperConfig.s.sol";
+import {HelperConfig} from "script/HelperConfig.s.sol";
 import {MockLendingPool} from "test/mocks/MockLendingPool.sol";
 
-contract TimeLockTest is Test{
+contract TimeLockTest is Test {
     VaultNFT vaultnft;
     TimeLockVault timelockvault;
     DeployTimeLockVault deployer;
     ERC20Mock token;
     address user = makeAddr("user");
     HelperConfig config;
+
     function setUp() public {
         vaultnft = new VaultNFT();
         config = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         address lendingPool = networkConfig.lendingPool;
         address treasury = networkConfig.treasury;
-        
-        
-        token = new ERC20Mock("test","t",user,100 * 1e18);
+
+        token = new ERC20Mock("test", "t", user, 100 * 1e18);
         timelockvault = new TimeLockVault();
-        timelockvault.intialize(vaultnft,lendingPool, treasury);
+        timelockvault.intialize(vaultnft, lendingPool, treasury);
         vaultnft.transferOwnership(address(timelockvault));
         vm.startPrank(user);
         token.approve(address(timelockvault), type(uint256).max);
@@ -56,18 +53,15 @@ contract TimeLockTest is Test{
         vm.deal(user, 100 ether);
     }
 
-
     function testrevertsWhenWrongTimeLimit() public {
         vm.expectRevert();
-        timelockvault.lockFundsUsingTimeLock(user,50 * 1e18,9,token);
-        
-        
+        timelockvault.lockFundsUsingTimeLock(user, 50 * 1e18, 9, token);
     }
 
     function testCanLockFunds() public {
         uint256 nowtime = block.timestamp;
         vm.prank(user);
-        uint256 vaultId = timelockvault.lockFundsUsingTimeLock(user,50 * 1e18,7,token);
+        uint256 vaultId = timelockvault.lockFundsUsingTimeLock(user, 50 * 1e18, 7, token);
         TimeLockVault.VaultInfo memory vaultInfo = timelockvault.getVaultsInfo(vaultId);
         ERC20Mock tokens = ERC20Mock(address(vaultInfo.token));
         uint256 amount = vaultInfo.amount;
@@ -75,8 +69,8 @@ contract TimeLockTest is Test{
         bool isunlocked = vaultInfo.isUnlocked;
         assertEq(address(tokens), address(token));
         assertEq(amount, 50 * 1e18);
-        assertEq(unlocktime,nowtime + 7 days);
-        assertEq(isunlocked,false);
+        assertEq(unlocktime, nowtime + 7 days);
+        assertEq(isunlocked, false);
     }
 
     function testRevertWhenTokenIdIsZero() public {
@@ -86,10 +80,10 @@ contract TimeLockTest is Test{
 
     function testWithdraw() public {
         vm.prank(user);
-        uint256 vaultId = timelockvault.lockFundsUsingTimeLock(user,50 * 1e18,7,token);
+        uint256 vaultId = timelockvault.lockFundsUsingTimeLock(user, 50 * 1e18, 7, token);
         MockLendingPool mock = MockLendingPool(config.getActiveNetworkConfig().lendingPool);
-        mock.setVaultType(address(timelockvault),MockLendingPool.WithdrawType.Timelock);
-        mock.setMockYield(address(token),address(timelockvault), 10 ether);
+        mock.setVaultType(address(timelockvault), MockLendingPool.WithdrawType.Timelock);
+        mock.setMockYield(address(token), address(timelockvault), 10 ether);
         vm.warp(block.timestamp + 7 days);
         uint256 balanceBefore = token.balanceOf(user);
         uint256 treasuryBefore = token.balanceOf(config.getActiveNetworkConfig().treasury);
@@ -100,6 +94,6 @@ contract TimeLockTest is Test{
         uint256 expectedusergain = (50 ether + 10 ether) - 1 ether;
         uint256 expectedtreasury = 1 ether;
         assertEq(balanceAfter - balanceBefore, expectedusergain);
-        assertEq(treasuryAfter - treasuryBefore, expectedtreasury); 
-    } 
+        assertEq(treasuryAfter - treasuryBefore, expectedtreasury);
+    }
 }

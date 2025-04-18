@@ -18,8 +18,6 @@ pragma solidity ^0.8.25;
 
  */
 
-
-
 import {Test} from "forge-std/Test.sol";
 import {MultiSigVault} from "../src/MultisigVault/Multisigvault.sol";
 import {Multisig} from "../src/MultisigVault/multisigWallet.sol";
@@ -28,7 +26,7 @@ import {MockLendingPool} from "./mocks/MockLendingPool.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 
-contract MultisigVaultTest is Test{
+contract MultisigVaultTest is Test {
     Multisig multisig;
     MultiSigVault multisigvault;
     VaultNFT vaultnft;
@@ -47,7 +45,7 @@ contract MultisigVaultTest is Test{
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         address lendingPoolAddress = networkConfig.lendingPool;
         address treasury = networkConfig.treasury;
-        token = new ERC20Mock("test","t",user,100 * 1e18);
+        token = new ERC20Mock("test", "t", user, 100 * 1e18);
         multisigvault = new MultiSigVault();
         multisigvault.intialize(vaultnft, address(multisig), lendingPoolAddress, treasury);
         vaultnft.transferOwnership(address(multisigvault));
@@ -55,29 +53,25 @@ contract MultisigVaultTest is Test{
         token.approve(address(multisigvault), type(uint256).max);
         vm.stopPrank();
         vm.deal(user, 100 ether);
-
     }
 
-
     function testCanLockFunds() public {
-        uint256 vaultid = multisigvault.lockFundsUsingMultiSig(user,50 * 1e18,token);
+        uint256 vaultid = multisigvault.lockFundsUsingMultiSig(user, 50 * 1e18, token);
         MultiSigVault.VaultInfo memory vaultInfo = multisigvault.getVaultInfo(vaultid);
         ERC20Mock tokens = ERC20Mock(address(vaultInfo.token));
         uint256 amount = vaultInfo.amount;
         address[] memory signers = vaultInfo.signers;
         assertEq(address(tokens), address(token));
         assertEq(amount, 50 * 1e18);
-        assertEq(signers[0],0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 );
-        assertEq(signers[1],0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
-
+        assertEq(signers[0], 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+        assertEq(signers[1], 0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
     }
 
-
     function testCanWithdrawFunds() public {
-        uint256 vaultid = multisigvault.lockFundsUsingMultiSig(user,50 * 1e18,token);
+        uint256 vaultid = multisigvault.lockFundsUsingMultiSig(user, 50 * 1e18, token);
         MockLendingPool mock = MockLendingPool(config.getActiveNetworkConfig().lendingPool);
-        mock.setVaultType(address(multisigvault),MockLendingPool.WithdrawType.MultiSig);
-        mock.setMockYield(address(token),address(multisigvault),10 ether);
+        mock.setVaultType(address(multisigvault), MockLendingPool.WithdrawType.MultiSig);
+        mock.setMockYield(address(token), address(multisigvault), 10 ether);
         uint256 balanceBefore = token.balanceOf(user);
         uint256 treasuryBefore = token.balanceOf(config.getActiveNetworkConfig().treasury);
         vm.prank(owner1);
@@ -86,23 +80,15 @@ contract MultisigVaultTest is Test{
         multisig.approve(vaultid);
         vm.prank(owner3);
         multisig.approve(vaultid);
-        
-        
+
         vm.prank(user);
         multisigvault.withdrawFromMultiSigVault(vaultid);
-       
+
         uint256 balanceAfter = token.balanceOf(user);
         uint256 treasuryAfter = token.balanceOf(config.getActiveNetworkConfig().treasury);
         uint256 expectedAmount = (50 ether + 10 ether) - 1 ether;
         uint256 expectedTreasury = 1 ether;
         assertEq(balanceAfter - balanceBefore, expectedAmount);
         assertEq(treasuryAfter - treasuryBefore, expectedTreasury);
-
-
-    
-    
     }
-      
-
-
 }

@@ -7,10 +7,8 @@ import {VaultNFT} from "src/VaultNft.sol";
 import {Multisig} from "src/MultisigVault/multisigWallet.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 
-contract DeployMultiSigVault is Script{
-
-
-    function run() external returns(MultiSigVault){
+contract DeployMultiSigVault is Script {
+    function run() external returns (MultiSigVault) {
         HelperConfig config = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         address lendingPool = networkConfig.lendingPool;

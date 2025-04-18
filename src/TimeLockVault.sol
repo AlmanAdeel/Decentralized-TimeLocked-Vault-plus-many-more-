@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-
 import {IVaultNFT} from "./Interfaces/IValutNFT.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -12,19 +11,22 @@ import {ILendingPool} from "./Interfaces/ILendingPool.sol";
 contract TimeLockVault is ReentrancyGuard {
     error TimeLockVault__EnterAValidTimeLimit();
     error TimeLockVault__PleaseEnterAccurateVaultID();
-    event VaultCreated(address indexed user,uint256 amount,uint256 unlockTime,IERC20 token);
-    event WithDrawnFromTimeLockVault(address indexed user,uint256 amount,IERC20 token);
-    struct VaultInfo{
+
+    event VaultCreated(address indexed user, uint256 amount, uint256 unlockTime, IERC20 token);
+    event WithDrawnFromTimeLockVault(address indexed user, uint256 amount, IERC20 token);
+
+    struct VaultInfo {
         IERC20 token;
         uint256 amount;
         uint256 unlockTime;
         bool isUnlocked;
     }
     //VaultInfo private vaultInfo;
-    mapping(uint256 =>  VaultInfo) private vaults;
+
+    mapping(uint256 => VaultInfo) private vaults;
     mapping(address => uint256) public unlockTime;
     mapping(address => uint256[]) private vaultID;
-   
+
     VaultNFT public vaultNFT;
     ILendingPool public lendingPool;
     address public treasury;
@@ -35,7 +37,7 @@ contract TimeLockVault is ReentrancyGuard {
     //     treasury = _treasury;
     // }
 
-    function intialize(VaultNFT _vaultnft,address _lendingPool,address _treasury) external {
+    function intialize(VaultNFT _vaultnft, address _lendingPool, address _treasury) external {
         require(!intialized, "Already initialized");
         vaultNFT = _vaultnft;
         lendingPool = ILendingPool(_lendingPool); // Aave LendingPool address (get from testnet docs)
@@ -43,8 +45,10 @@ contract TimeLockVault is ReentrancyGuard {
         intialized = true;
     }
 
-
-    function lockFundsUsingTimeLock(address user,uint256 amountToLock,uint256 unlocktimeInDays,IERC20 token) external returns(uint256){
+    function lockFundsUsingTimeLock(address user, uint256 amountToLock, uint256 unlocktimeInDays, IERC20 token)
+        external
+        returns (uint256)
+    {
         bool lockTimeValid = _getTimeLimit(unlocktimeInDays * 1 days);
         if (!lockTimeValid) {
             revert TimeLockVault__EnterAValidTimeLimit();
@@ -56,22 +60,16 @@ contract TimeLockVault is ReentrancyGuard {
         uint256 vaultId = _mintNFT(user);
         vaultID[user].push(vaultId);
         emit VaultCreated(user, amountToLock, unlockTime[user], token);
-        vaults[vaultId] = VaultInfo({
-            token: token,
-            amount: amountToLock,
-            unlockTime: unlockTime[user],
-            isUnlocked: false
-        });
+        vaults[vaultId] =
+            VaultInfo({token: token, amount: amountToLock, unlockTime: unlockTime[user], isUnlocked: false});
         return vaultId;
-
-
     }
 
     function withdrawFromTimeLockVault(uint256 vaultid) external payable nonReentrant {
-        if(vaultid == 0) {
+        if (vaultid == 0) {
             revert TimeLockVault__PleaseEnterAccurateVaultID();
         }
-        
+
         VaultInfo storage vault = vaults[vaultid];
         require(vault.amount > 0, "No funds to withdraw");
         require(block.timestamp >= vault.unlockTime, "Funds are still locked");
@@ -95,11 +93,10 @@ contract TimeLockVault is ReentrancyGuard {
 
         // ✅ Transfer final amount to user
         vault.token.transfer(msg.sender, userAmount);
-            emit WithDrawnFromTimeLockVault(msg.sender, vault.amount, vault.token);
-        }
+        emit WithDrawnFromTimeLockVault(msg.sender, vault.amount, vault.token);
+    }
 
     ///internal functions
-
 
     function _getTimeLimit(uint256 unlocktime) internal pure returns (bool) {
         if (unlocktime == 7 days) {
@@ -118,9 +115,9 @@ contract TimeLockVault is ReentrancyGuard {
     }
 
     function _mintNFT(address user) internal returns (uint256) {
-        return vaultNFT.mint(user,10);
+        return vaultNFT.mint(user, 10);
     }
-   // //getter functions
+    // //getter functions
 
     // function getmintnft(address user) external returns(uint256){
     //     return _mintNFT(user);
@@ -135,20 +132,15 @@ contract TimeLockVault is ReentrancyGuard {
     //     }
     //     revert("Token ID not found");
     // }
-    function getVaultsInfo(uint256 tokenid) external view returns(VaultInfo memory){
+    function getVaultsInfo(uint256 tokenid) external view returns (VaultInfo memory) {
         return vaults[tokenid];
     }
 
-      function getLendingPool() external view returns (address) {
-    return address(lendingPool);
-}
-function getVaultValue(uint256 vaultId) external view returns (uint256) {
-    return vaults[vaultId].amount;
-}
+    function getLendingPool() external view returns (address) {
+        return address(lendingPool);
+    }
 
-    
-        
-    
- 
-
+    function getVaultValue(uint256 vaultId) external view returns (uint256) {
+        return vaults[vaultId].amount;
+    }
 }

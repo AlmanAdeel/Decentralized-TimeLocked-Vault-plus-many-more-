@@ -13,7 +13,7 @@ contract VaultNFT is ERC721URIStorage, Ownable {
         _nextTokenId = 1;
     }
 
-    function mint(address to,uint256 priceinUSD) external onlyOwner returns (uint256) {
+    function mint(address to, uint256 priceinUSD) external onlyOwner returns (uint256) {
         uint256 tokenId = _nextTokenId++;
         _mint(to, tokenId);
         tokenPrices[tokenId] = priceinUSD;
@@ -26,6 +26,6 @@ contract VaultNFT is ERC721URIStorage, Ownable {
     }
 
     function getUsdPrice(uint256 tokenId) external view returns (uint256) {
-    return tokenPrices[tokenId];
-}
+        return tokenPrices[tokenId];
+    }
 }

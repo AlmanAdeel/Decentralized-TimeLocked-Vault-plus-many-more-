@@ -7,7 +7,7 @@ import {VaultNFT} from "../src/VaultNft.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 
 contract DeployTimeLockVault is Script {
-    function run() external returns(TimeLockVault){
+    function run() external returns (TimeLockVault) {
         HelperConfig config = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         address lendingPool = networkConfig.lendingPool;
@@ -20,7 +20,5 @@ contract DeployTimeLockVault is Script {
         vaultNFT.transferOwnership(address(timeLockVault));
         vm.stopBroadcast();
         return timeLockVault;
-
-        
     }
 }

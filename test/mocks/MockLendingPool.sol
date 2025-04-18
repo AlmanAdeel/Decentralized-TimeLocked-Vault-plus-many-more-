@@ -6,7 +6,11 @@ import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract MockLendingPool {
     // Extended enum with 3 vault types
-    enum WithdrawType { Timelock, Milestone, MultiSig }
+    enum WithdrawType {
+        Timelock,
+        Milestone,
+        MultiSig
+    }
 
     // Map vault address => type
     mapping(address => WithdrawType) public vaultTypes;
@@ -22,22 +26,13 @@ contract MockLendingPool {
         vaultTypes[vault] = wType;
     }
 
-    function deposit(
-        address asset,
-        uint256 amount,
-        address onBehalfOf,
-        uint16 /* _ */
-    ) external {
+    function deposit(address asset, uint256 amount, address onBehalfOf, uint16 /* _ */ ) external {
         bool success = IERC20(asset).transferFrom(msg.sender, address(this), amount);
         require(success, "Deposit transfer failed");
         balances[onBehalfOf][asset] += amount;
     }
 
-    function withdraw(
-        address asset,
-        uint256 amount,
-        address to
-    ) external returns (uint256 returnAmount) {
+    function withdraw(address asset, uint256 amount, address to) external returns (uint256 returnAmount) {
         require(to != address(0), "Invalid recipient");
         uint256 currentBalance = balances[msg.sender][asset];
         require(currentBalance >= amount, "Not enough deposited");
@@ -73,11 +68,7 @@ contract MockLendingPool {
         return returnAmount;
     }
 
-    function setMockYield(
-        address asset,
-        address user,
-        uint256 extraAmount
-    ) external {
+    function setMockYield(address asset, address user, uint256 extraAmount) external {
         balances[user][asset] += extraAmount;
         ERC20Mock(asset).mint(address(this), extraAmount);
     }

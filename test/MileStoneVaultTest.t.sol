@@ -18,15 +18,14 @@ pragma solidity ^0.8.25;
 
  */
 
-
-
-import {Test,console} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {MilestoneVault} from "../src/Milestonevault.sol";
 import {VaultNFT} from "../src/VaultNft.sol";
 import {DeployMilestoneVault} from "../script/DeployMileStoneVault.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {MockLendingPool} from "test/mocks/MockLendingPool.sol";
+
 contract MilestoneVaultTest is Test {
     VaultNFT vaultnft;
     MilestoneVault milestonevault;
@@ -34,18 +33,18 @@ contract MilestoneVaultTest is Test {
     ERC20Mock token;
     address user = makeAddr("user");
     HelperConfig public config;
+
     function setUp() public {
-        
         config = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         address lendingPool = networkConfig.lendingPool;
         address treasury = networkConfig.treasury;
         console.log("Lending Pool from Config: ", networkConfig.lendingPool);
 
-        token = new ERC20Mock("test","t",user,100 * 1e18);
+        token = new ERC20Mock("test", "t", user, 100 * 1e18);
         vaultnft = new VaultNFT();
         milestonevault = new MilestoneVault();
-        milestonevault.intialize(vaultnft,lendingPool, treasury);
+        milestonevault.intialize(vaultnft, lendingPool, treasury);
         vaultnft.transferOwnership(address(milestonevault));
         vm.startPrank(user);
         token.approve(address(milestonevault), type(uint256).max);
@@ -54,9 +53,7 @@ contract MilestoneVaultTest is Test {
         vm.stopPrank();
         console.log("Vaults internal lendingPool: ", milestonevault.getLendingPool());
         vm.deal(user, 100 ether);
-
     }
-
 
     function testCanLockFundInMileStoneVault() public {
         uint256 nowtime = block.timestamp;
@@ -64,7 +61,7 @@ contract MilestoneVaultTest is Test {
         console.log("token address: ", address(token));
 
         vm.prank(user);
-        uint256 vaultId = milestonevault.lockfundsUsingMileStone(user,50 * 1e18,token,30);
+        uint256 vaultId = milestonevault.lockfundsUsingMileStone(user, 50 * 1e18, token, 30);
         MilestoneVault.Milestone memory milestoneInfo = milestonevault.getMilestoneInfo(vaultId);
         ERC20Mock tokens = ERC20Mock(address(milestoneInfo.token));
         uint256 amount = milestoneInfo.amount;
@@ -78,17 +75,15 @@ contract MilestoneVaultTest is Test {
         assertEq(milestonecount, 4);
         assertEq(milestoneDuration, 30 days);
         assertEq(amountClaimed, 0);
-        }
+    }
 
     function testCanWithdrawFundsFromMileStoneVault() public {
         vm.prank(user);
-        uint256 vaultId = milestonevault.lockfundsUsingMileStone(user,50 * 1e18,token,30);
-        
-
+        uint256 vaultId = milestonevault.lockfundsUsingMileStone(user, 50 * 1e18, token, 30);
 
         MockLendingPool mock = MockLendingPool(config.getActiveNetworkConfig().lendingPool);
-        mock.setVaultType(address(milestonevault),MockLendingPool.WithdrawType.Milestone);
-        mock.setMockYield(address(token),address(milestonevault), 10 ether);
+        mock.setVaultType(address(milestonevault), MockLendingPool.WithdrawType.Milestone);
+        mock.setMockYield(address(token), address(milestonevault), 10 ether);
         vm.warp(block.timestamp + 30 days);
         uint256 balanceBefore = token.balanceOf(user);
         uint256 treasuryBefore = token.balanceOf(config.getActiveNetworkConfig().treasury);
@@ -101,13 +96,6 @@ contract MilestoneVaultTest is Test {
         uint256 expectedUserGain = (50 ether + 10 ether) - 1 ether;
         uint256 expectedTreasuryGain = 1 ether;
         assertEq(balanceAfter - balanceBefore, expectedUserGain);
-        assertEq(treasuryAfter - treasuryBefore, expectedTreasuryGain); 
-
-
-        
-       
+        assertEq(treasuryAfter - treasuryBefore, expectedTreasuryGain);
     }
-
-
- 
 }
