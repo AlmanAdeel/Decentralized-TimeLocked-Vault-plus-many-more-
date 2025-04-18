@@ -1,66 +1,84 @@
-## Foundry
+# Modular Vault System – Phase 1 (TimeLock, Milestone, ETH, NFT, Factory)
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
 
-Foundry consists of:
+This repository contains the foundational architecture for a modular, upgrade-ready **DeFi Vault System**. The vaults are designed for scenarios involving delayed fund releases, milestone-based withdrawals, and NFT ownership integration.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+This is **Phase 1** of the larger system, focusing on:
+- ETH-based vaults
+- TimeLock and Milestone-specific vault logic
+- NFT integrations for access or collateral tracking
+- A factory contract to deploy vaults programmatically
 
-## Documentation
+Collateral-based minting will be added in a future update (Phase 2).
 
-https://book.getfoundry.sh/
+---
 
-## Usage
+## Contracts Included
 
-### Build
+### 1. `TimeLockVault.sol`
+- Stores ETH for a user-defined duration
+- Withdrawals are only possible after the lock period expires
+- Useful for vesting schedules, time-based payouts, and personal fund locking
 
-```shell
-$ forge build
-```
+### 2. `MilestoneVault.sol`
+- Allows depositors to define multiple milestones
+- Each milestone has a release condition and associated fund percentage
+- Designed for use in:
+  - Freelance project payments
+  - Crowdfunding stages
+  - DAO-governed budget releases
 
-### Test
+### 3. `VaultEth.sol`
+- Handles basic ETH deposit and withdrawal logic
+- Used as a base for both TimeLock and Milestone vaults
+- Integrates with the factory for automated deployment
 
-```shell
-$ forge test
-```
+### 4. `VaultNft.sol`
+- Issues NFTs representing ownership or access rights to a specific vault
+- Acts as a vault access control layer
+- Enables transferable vault ownership and tracking
 
-### Format
+### 5. `VaultFactory.sol`
+- Deploys vaults dynamically via minimal proxy (clone pattern)
+- Efficient gas usage for multiple vault instantiations
+- Tracks deployed vaults per user and vault type
 
-```shell
-$ forge fmt
-```
+---
 
-### Gas Snapshots
+## Architecture Goals
 
-```shell
-$ forge snapshot
-```
+- Modularity: Each vault type is designed as a separate contract inheriting shared logic
+- Upgradeability: Contracts structured to support future extension (e.g., collateral minting, ERC-20 support)
+- Flexibility: Supports both time-based and task-based fund release mechanisms
+- NFT Integration: Bridges the gap between DeFi vaults and NFT-based authorization or collateral models
 
-### Anvil
+---
 
-```shell
-$ anvil
-```
+## Phase Roadmap
 
-### Deploy
+### ✅ Phase 1 (Current)
+- ETH-based vaults with milestone and time-based logic
+- Vault factory
+- NFT vault integration
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+### 🔜 Phase 2 (Planned)
+- Collateral-based minting
+- Yield farming integration (via Aave or other protocols)
+- Governance vaults
+- Full front-end deployment and UX layer
 
-### Cast
+---
 
-```shell
-$ cast <subcommand>
-```
+## Development Notes
 
-### Help
+This system is part of a long-term smart contract architecture exploration focused on real-world DeFi applications. It emphasizes gas efficiency, modular logic, and composability with NFTs and other external systems.
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Code is still undergoing optimization and internal testing.  
+Security audits and formal testing will follow in later phases.
+
+---
+
+## Built by:
+Alman Adeel
+Smart Contract Developer | DeFi Systems Designer  
