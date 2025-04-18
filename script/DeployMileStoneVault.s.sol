@@ -15,7 +15,8 @@ contract DeployMilestoneVault is Script {
     function run() external returns(MilestoneVault, VaultNFT){
         vm.startBroadcast();
         VaultNFT vaultNFT = new VaultNFT();
-        MilestoneVault milestoneVault = new MilestoneVault(vaultNFT,lendingPool, treasury);
+        MilestoneVault milestoneVault = new MilestoneVault();
+        milestoneVault.intialize(vaultNFT, lendingPool, treasury);
         vaultNFT.transferOwnership(address(milestoneVault));
         vm.stopBroadcast();
         return (milestoneVault, vaultNFT);

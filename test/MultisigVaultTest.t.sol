@@ -47,8 +47,9 @@ contract MultisigVaultTest is Test{
         HelperConfig.NetworkConfig memory networkConfig = config.getActiveNetworkConfig();
         address lendingPoolAddress = networkConfig.lendingPool;
         address treasury = networkConfig.treasury;
-        token = new ERC20Mock(user,100 * 1e18);
-        multisigvault = new MultiSigVault(vaultnft,address(multisig),lendingPoolAddress, treasury);
+        token = new ERC20Mock("test","t",user,100 * 1e18);
+        multisigvault = new MultiSigVault();
+        multisigvault.intialize(vaultnft, address(multisig), lendingPoolAddress, treasury);
         vaultnft.transferOwnership(address(multisigvault));
         vm.startPrank(user);
         token.approve(address(multisigvault), type(uint256).max);

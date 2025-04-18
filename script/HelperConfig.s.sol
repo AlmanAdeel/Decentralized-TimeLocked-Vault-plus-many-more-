@@ -60,9 +60,15 @@ contract HelperConfig is Script {
         ERC20Mock dai  = new ERC20Mock("Dai Stablecoin", "DAI", msg.sender, 1_000_000 ether);
         vm.stopBroadcast();
 
+        address[] memory allowedTokens = new address[](3);
+        allowedTokens[0] = address(weth);
+        allowedTokens[1] = address(usdc);
+        allowedTokens[2] = address(dai);
+
         NetworkConfig memory anvilConfig = NetworkConfig({
         lendingPool: address(mockLendingPool),
-        treasury: DEAFULT_TREASURY
+        treasury: DEAFULT_TREASURY,
+        allowedTokens: allowedTokens
         });
 
     activeNetworkConfig = anvilConfig;

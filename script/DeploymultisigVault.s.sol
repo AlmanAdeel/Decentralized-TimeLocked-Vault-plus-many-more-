@@ -18,7 +18,8 @@ contract DeployMultiSigVault is Script{
         vm.startBroadcast();
         VaultNFT vaultNFT = new VaultNFT();
         Multisig multisig = new Multisig(3);
-        MultiSigVault multiSigVault = new MultiSigVault(vaultNFT, address(multisig),lendingPool, treasury);
+        MultiSigVault multiSigVault = new MultiSigVault();
+        multiSigVault.intialize(vaultNFT, address(multisig), lendingPool, treasury);
         vaultNFT.transferOwnership(address(multiSigVault));
         vm.stopBroadcast();
         return multiSigVault;

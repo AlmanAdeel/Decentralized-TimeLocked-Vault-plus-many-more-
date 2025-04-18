@@ -42,9 +42,10 @@ contract MilestoneVaultTest is Test {
         address treasury = networkConfig.treasury;
         console.log("Lending Pool from Config: ", networkConfig.lendingPool);
 
-        token = new ERC20Mock(user,100 * 1e18);
+        token = new ERC20Mock("test","t",user,100 * 1e18);
         vaultnft = new VaultNFT();
-        milestonevault = new MilestoneVault(vaultnft,lendingPool, treasury);
+        milestonevault = new MilestoneVault();
+        milestonevault.intialize(vaultnft,lendingPool, treasury);
         vaultnft.transferOwnership(address(milestonevault));
         vm.startPrank(user);
         token.approve(address(milestonevault), type(uint256).max);

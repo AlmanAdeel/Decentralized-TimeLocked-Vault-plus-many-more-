@@ -15,7 +15,8 @@ contract DeployTimeLockVault is Script {
         vm.startBroadcast();
 
         VaultNFT vaultNFT = new VaultNFT();
-        TimeLockVault timeLockVault = new TimeLockVault(vaultNFT, lendingPool, treasury);
+        TimeLockVault timeLockVault = new TimeLockVault();
+        timeLockVault.intialize(vaultNFT, lendingPool, treasury);
         vaultNFT.transferOwnership(address(timeLockVault));
         vm.stopBroadcast();
         return timeLockVault;

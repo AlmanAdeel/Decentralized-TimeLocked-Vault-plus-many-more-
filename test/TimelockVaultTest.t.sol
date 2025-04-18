@@ -44,8 +44,9 @@ contract TimeLockTest is Test{
         address treasury = networkConfig.treasury;
         
         
-        token = new ERC20Mock(user,100 * 1e18);
-        timelockvault = new TimeLockVault(vaultnft,lendingPool, treasury);
+        token = new ERC20Mock("test","t",user,100 * 1e18);
+        timelockvault = new TimeLockVault();
+        timelockvault.intialize(vaultnft,lendingPool, treasury);
         vaultnft.transferOwnership(address(timelockvault));
         vm.startPrank(user);
         token.approve(address(timelockvault), type(uint256).max);
